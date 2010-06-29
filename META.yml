@@ -1,0 +1,22 @@
+---
+abstract: 'Dump data structure compactly and potentially partially'
+author:
+  - 'Steven Haryanto <stevenharyanto@gmail.com>'
+build_requires:
+  Module::Build: 0.3601
+configure_requires:
+  Module::Build: 0.3601
+generated_by: 'Dist::Zilla version 2.101230'
+license: perl
+meta-spec:
+  url: http://module-build.sourceforge.net/META-spec-v1.4.html
+  version: 1.4
+name: Data-Dump-Partial
+recommends: {}
+requires:
+  Data::Dump: 1.17
+  perl: 5.010
+resources:
+  homepage: http://search.cpan.org/dist/Data-Dump-Partial/
+  repository: http://github.com/sharyanto/perl-Data-Dump-Partial
+version: 0.01
