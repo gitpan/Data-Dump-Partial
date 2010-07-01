@@ -3,6 +3,7 @@ LICENSE
 MANIFEST
 META.yml
 README
+benchmark/bench1.pl
 dist.ini
 lib/Data/Dump/Partial.pm
 t/00-compile.t

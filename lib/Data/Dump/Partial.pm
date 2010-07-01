@@ -1,6 +1,6 @@
 package Data::Dump::Partial;
 BEGIN {
-  $Data::Dump::Partial::VERSION = '0.01';
+  $Data::Dump::Partial::VERSION = '0.02';
 }
 # ABSTRACT: Dump data structure compactly and potentially partially
 
@@ -37,7 +37,7 @@ sub dump_partial {
         my $filter = sub {
             my ($ctx, $oref) = @_;
 
-            if ($opts->{max_len} && $ctx->is_scalar &&
+            if ($opts->{max_len} && $ctx->is_scalar && defined($$oref) &&
                     length($$oref) > $opts->{max_len}) {
 
                 return { object => substr($$oref, 0, $opts->{max_len}-3)."..." };
@@ -127,17 +127,17 @@ Data::Dump::Partial - Dump data structure compactly and potentially partially
 
 =head1 VERSION
 
-version 0.01
+version 0.02
 
 =head1 SYNOPSIS
 
  use Data::Dump::Partial qw(dump_partial dumpp);
 
  dump_partial([1, "some long string", 3, 4, 5, 6, 7]);
- # prints something like: (1, "some long st...", 3, 4, 5, ...)
+ # prints something like: [1, "some long st...", 3, 4, 5, ...]
 
  # specify options
- dump_partial($data, $more_data, {max_len => 50, max_scalar_len => 10});
+ dump_partial($data, $more_data, {max_total_len => 50, max_keys => 4});
 
 =head1 DESCRIPTION
 
