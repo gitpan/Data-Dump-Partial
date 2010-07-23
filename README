@@ -3,7 +3,7 @@ NAME
     partially
 
 VERSION
-    version 0.02
+    version 0.03
 
 SYNOPSIS
      use Data::Dump::Partial qw(dump_partial dumpp);
@@ -59,6 +59,29 @@ FUNCTIONS
 
         Always truncate these hash keys, no matter what. This is actually
         also implemented by Data::Dump::Filtered.
+
+    *   mask_keys_regex => REGEX
+
+        When encountering keys that match certain regex, mask it with '***'.
+        This can be useful if you want to mask passwords, e.g.:
+        mask_keys_regex => qr/\Apass\z|passw(or)?d/i. If you want more
+        general masking, you can use pair_filter.
+
+    *   pair_filter => CODE
+
+        CODE will be called for each hash key/value pair encountered in the
+        data. It will be given ($key, $value) as argument and is expected to
+        return a list of one or more of keys and values. The example below
+        implements something similar to what mask_keys_regex accomplishes:
+
+         # mask each password character with '*'
+         hash_pair_filter => sub {
+             my ($k, $v) = @_;
+             if ($k =~ /\Apass\z|passw(or)?d/i) {
+                 $v =~ s/./*/g;
+             }
+             ($k, $v);
+         }
 
     *   dd_filter => \&sub
 

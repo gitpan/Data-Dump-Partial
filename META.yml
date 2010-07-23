@@ -19,4 +19,4 @@ requires:
 resources:
   homepage: http://search.cpan.org/dist/Data-Dump-Partial/
   repository: http://github.com/sharyanto/perl-Data-Dump-Partial
-version: 0.02
+version: 0.03
