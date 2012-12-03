@@ -4,27 +4,30 @@ use warnings;
 
 use Module::Build 0.3601;
 
+
 my %module_build_args = (
-  'build_requires' => {
-    'Module::Build' => '0.3601'
+  "build_requires" => {
+    "Module::Build" => "0.3601",
+    "Test::More" => "0.98"
   },
-  'configure_requires' => {
-    'Module::Build' => '0.3601'
+  "configure_requires" => {
+    "Module::Build" => "0.3601"
   },
-  'dist_abstract' => 'Dump data structure compactly and potentially partially',
-  'dist_author' => [
-    'Steven Haryanto <stevenharyanto@gmail.com>'
+  "dist_abstract" => "Dump data structure compactly and potentially partially",
+  "dist_author" => [
+    "Steven Haryanto <stevenharyanto\@gmail.com>"
   ],
-  'dist_name' => 'Data-Dump-Partial',
-  'dist_version' => '0.03',
-  'license' => 'perl',
-  'module_name' => 'Data::Dump::Partial',
-  'recommends' => {},
-  'requires' => {
-    'Data::Dump' => '1.17',
-    'perl' => '5.010'
+  "dist_name" => "Data-Dump-Partial",
+  "dist_version" => "0.04",
+  "license" => "perl",
+  "module_name" => "Data::Dump::Partial",
+  "recommends" => {},
+  "recursive_test_files" => 1,
+  "requires" => {
+    "Data::Dump" => "1.17",
+    "perl" => "5.010"
   },
-  'script_files' => []
+  "script_files" => []
 );
 
 

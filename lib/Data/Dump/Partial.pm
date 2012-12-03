@@ -1,8 +1,4 @@
 package Data::Dump::Partial;
-BEGIN {
-  $Data::Dump::Partial::VERSION = '0.03';
-}
-# ABSTRACT: Dump data structure compactly and potentially partially
 
 use 5.010;
 use strict;
@@ -13,7 +9,7 @@ require Exporter;
 our @ISA = qw(Exporter);
 our @EXPORT_OK = qw(dump_partial dumpp);
 
-
+our $VERSION = '0.04'; # VERSION
 
 sub _dmp { Data::Dump::Filtered::dump_filtered(@_, undef) }
 
@@ -73,7 +69,7 @@ sub dump_partial {
                 my $modified;
 
                 if ($opts->{pair_filter} && !$skip_modify_outermost_hash) {
-                    for (keys %$oref) {
+                    for (sort keys %$oref) {
                         my @res = $opts->{pair_filter}->($_, $oref->{$_});
                         $modified = "pair_filter" unless @res == 2 &&
                             $res[0] eq $_ && "$res[1]" eq "$oref->{$_}";
@@ -86,7 +82,7 @@ sub dump_partial {
                 }
 
                 if ($opts->{mask_keys_regex} && !$skip_modify_outermost_hash) {
-                    for (keys %hash) {
+                    for (sort keys %hash) {
                         if (/$opts->{mask_keys_regex}/) {
                             $modified = "mask_keys_regex";
                             $hash{$_} = '***';
@@ -99,19 +95,19 @@ sub dump_partial {
                     my $mk = $opts->{max_keys};
                     {
                         if ($opts->{hide_keys}) {
-                            for (keys %hash) {
+                            for (sort keys %hash) {
                                 delete $hash{$_} if $_ ~~ @{$opts->{hide_keys}};
                             }
                         }
                         last if keys(%hash) <= $mk;
                         if ($opts->{worthless_keys}) {
-                            for (keys %hash) {
+                            for (sort keys %hash) {
                                 last if keys(%hash) <= $mk;
                                 delete $hash{$_} if $_ ~~ @{$opts->{worthless_keys}};
                             }
                         }
                         last if keys(%hash) <= $mk;
-                        for (keys %hash) {
+                        for (reverse sort keys %hash) {
                             delete $hash{$_} if !$opts->{precious_keys} ||
                                 !($_ ~~ @{$opts->{precious_keys}});
                             last if keys(%hash) <= $mk;
@@ -155,10 +151,10 @@ sub dump_partial {
     $out;
 }
 
-1;
-
-
 sub dumpp { dump_partial(@_) }
+
+1;
+# ABSTRACT: Dump data structure compactly and potentially partially
 
 
 __END__
@@ -170,7 +166,7 @@ Data::Dump::Partial - Dump data structure compactly and potentially partially
 
 =head1 VERSION
 
-version 0.03
+version 0.04
 
 =head1 SYNOPSIS
 
@@ -180,7 +176,13 @@ version 0.03
  # prints something like: [1, "some long st...", 3, 4, 5, ...]
 
  # specify options
- dump_partial($data, $more_data, {max_total_len => 50, max_keys => 4});
+ dumpp($data, $more_data, {max_total_len => 50, max_keys => 4});
+
+ # mask passwords specified in hash key values
+ dumpp({auth_info=>{user=>"steven", password=>"secret"}, foo=>1, bar=>2},
+       {mask_keys_regex=>qr/\Apass\z|passw(or)?d/i});
+ # prints something like:
+ # {auth_info=>{user=>"steven", password=>"***"}, foo=>1, bar=>2}
 
 =head1 DESCRIPTION
 
@@ -188,41 +190,47 @@ version 0.03
 
 =head2 dump_partial(..., $opts)
 
-Dump one more data structures compactly and potentially
-partially. Uses L<Data::Dump::Filtered> as the backend. By compactly,
-it means all indents and comments and newlines are removed, so the
-output all fits in one line. By partially, it means only a certain
-number of scalar length, array elements, hash keys are showed.
+Dump one more data structures compactly and potentially partially. Uses
+L<Data::Dump::Filtered> as the backend.
 
-$opts is a hashref, optional only when there is one data to dump, with
-the following known keys:
+By compactly, it means all indents and comments and newlines are removed, so the
+output all fits in one line.
+
+By partially, it means only up to a certain amount of data are dumped/shown:
+string longer than a certain length will be truncated (with "..." appended in
+the end), array more than a certain number of elements will be truncated, and
+hash containing more than a certain number of pairs will be truncated. The total
+length of dump is also limited. When truncating hash you can specify which keys
+to discard/preserve first. You can also mask certain hash key values (for
+example, to avoid exposing passwords in dumps).
+
+$opts is a hashref, optional only when there is one data to dump, with the
+following known keys:
 
 =over 4
 
 =item * max_total_len => NUM
 
-Total length of output before it gets truncated with an
-ellipsis. Default is 80.
+Total length of output before it gets truncated with an ellipsis. Default is 80.
 
 =item * max_len => NUM
 
-Maximum length of a scalar (string, etc) to show before the rest get
-truncated with an ellipsis. Default is 32.
+Maximum length of a scalar (string, etc) to show before the rest get truncated
+with an ellipsis. Default is 32.
 
 =item * max_keys => NUM
 
-Number of key pairs of a hash to show before the rest get truncated
-with an ellipsis. Default is 5.
+Number of key pairs of a hash to show before the rest get truncated with an
+ellipsis. Default is 5.
 
 =item * max_elems => NUM
 
-Number of elements of an array to show before the rest get truncated
-with an ellipsis. Default is 5.
+Number of elements of an array to show before the rest get truncated with an
+ellipsis. Default is 5.
 
 =item * precious_keys => [KEY, ...]
 
-Never truncate these keys (even if it results in max_keys limit being
-exceeded).
+Never truncate these keys (even if it results in max_keys limit being exceeded).
 
 =item * worthless_keys => [KEY, ...]
 
@@ -235,17 +243,17 @@ implemented by Data::Dump::Filtered.
 
 =item * mask_keys_regex => REGEX
 
-When encountering keys that match certain regex, mask it with '***'. This can
-be useful if you want to mask passwords, e.g.: mask_keys_regex =>
+When encountering keys that match certain regex, mask the values with '***'.
+This can be useful if you want to mask passwords, e.g.: mask_keys_regex =>
 qr/\Apass\z|passw(or)?d/i. If you want more general masking, you can use
 pair_filter.
 
 =item * pair_filter => CODE
 
-CODE will be called for each hash key/value pair encountered in the data. It will
-be given ($key, $value) as argument and is expected to return a list of one or
-more of keys and values. The example below implements something similar to what
-mask_keys_regex accomplishes:
+CODE will be called for each hash key/value pair encountered in the data. It
+will be given ($key, $value) as argument and is expected to return a list of
+zero or more of keys and values. The example below implements something similar
+to what mask_keys_regex accomplishes:
 
  # mask each password character with '*'
  hash_pair_filter => sub {
@@ -258,8 +266,8 @@ mask_keys_regex accomplishes:
 
 =item * dd_filter => \&sub
 
-If you have other Data::Dump::Filtered filter you want to execute, you
-can pass it here.
+If you have other Data::Dump::Filtered filter you want to execute, you can pass
+it here.
 
 =back
 
@@ -271,9 +279,8 @@ An alias for dump_filtered().
 
 =head2 What is the point/purpose of this module?
 
-Sometimes you want to dump a data structure, but need it to be short,
-more than need it to be complete, for example when logging to log
-files or database.
+Sometimes you want to dump a data structure, but need it to be short, more than
+need it to be complete, for example when logging to log files or database.
 
 =head2 Is the dump result eval()-able? Will the dump result eval() to produce the original data?
 
@@ -285,11 +292,11 @@ L<Data::Dump::Filtered>
 
 =head1 AUTHOR
 
-  Steven Haryanto <stevenharyanto@gmail.com>
+Steven Haryanto <stevenharyanto@gmail.com>
 
 =head1 COPYRIGHT AND LICENSE
 
-This software is copyright (c) 2010 by Steven Haryanto.
+This software is copyright (c) 2012 by Steven Haryanto.
 
 This is free software; you can redistribute it and/or modify it under
 the same terms as the Perl 5 programming language system itself.
