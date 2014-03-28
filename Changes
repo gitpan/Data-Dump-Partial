@@ -1,5 +1,12 @@
 Revision history for Data-Dump-Partial
 
+0.05     2014-03-28 (SHARYANTO)
+
+         - No functional changes.
+
+         - Add 'use experimental smartmatch' for perl 5.18+.
+
+
 0.04     2012-12-03 (SHARYANTO)
 
          [INCOMPATIBLE CHANGES]
@@ -10,14 +17,14 @@ Revision history for Data-Dump-Partial
 
 0.03     2010-07-23 (SHARYANTO)
 
-         Add options: mask_keys_regex, pair_filter.
+         - Add options: mask_keys_regex, pair_filter.
 
 
 0.02     2010-07-01 (SHARYANTO)
 
-         Correct handling of undef.
+         - Correct handling of undef.
 
 
 0.01     2010-06-26 (SHARYANTO)
 
-         First release.
+         - First release.
